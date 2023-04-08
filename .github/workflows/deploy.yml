@@ -1,20 +1,21 @@
-name: Manually Deploy to Heroku
+name: Build Docker
 
 on: workflow_dispatch
-
+      
 jobs:
-  deploy:
+  build:
+
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
-          heroku_email: ${{secrets.HEROKU_EMAIL}}
-          usedocker: true
-          docker_heroku_process_type: web
-          stack: "container"
-          region: "us"
-        env:
-          HD_CONFIG_FILE_URL: ${{secrets.CONFIG_FILE_URL}}
+    - uses: actions/checkout@v3
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PW }}
+    - name: Building docker
+      run: docker image build . -t "${{ secrets.DOCKER_HUB_USERNAME }}"/main:sam-max-rclone
+
+    - name: Pushing docker to docker.io
+      run: docker push "${{ secrets.DOCKER_HUB_USERNAME }}"/main:sam-max-rclone
